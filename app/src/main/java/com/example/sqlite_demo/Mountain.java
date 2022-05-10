@@ -1,5 +1,7 @@
 package com.example.sqlite_demo;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Mountain {
     @Override
     public String toString() {
@@ -42,5 +44,6 @@ public class Mountain {
 
     private String name;
     private String location;
+    @SerializedName("size")
     private int meter;
 }
