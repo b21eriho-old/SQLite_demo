@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements JsonTask.JsonTaskListener {
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity implements JsonTask.JsonTask
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mountains = new ArrayList<Mountain>();
         mountainRecyclerView = findViewById(R.id.recycler_view);
         adapter = new MountainAdapter(mountains);
         mountainRecyclerView.setAdapter(adapter);
