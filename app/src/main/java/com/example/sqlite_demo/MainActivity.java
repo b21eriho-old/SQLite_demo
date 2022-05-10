@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.ContentValues;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -29,6 +31,8 @@ public class MainActivity extends AppCompatActivity implements JsonTask.JsonTask
     private Button clearViewButton;
     private Button clearDBButton;
 
+    private DataBaseHelper db;
+
     private Gson gson;
 
     @Override
@@ -45,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements JsonTask.JsonTask
             @Override
             public void onClick(View view) {
                 new JsonTask(MainActivity.this).execute(JSON_URL);
+
             }
         });
 
@@ -56,6 +61,34 @@ public class MainActivity extends AppCompatActivity implements JsonTask.JsonTask
             }
         });
 
+        fetchDBButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Cursor cursor = db.getReadableDatabase().rawQuery("SELECT * FROM " + DataBaseHelper.TABLE_MOUNTAIN + " ORDER BY " + DataBaseHelper.COLLUMN_METER, null, null);
+                List<Mountain> tmpMountains = new ArrayList<>();
+
+                while (cursor.moveToNext()) {
+                    Mountain mountain = new Mountain(
+                            cursor.getString(cursor.getColumnIndexOrThrow(DataBaseHelper.COLLUMN_NAME)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(DataBaseHelper.COLLUMN_LOCATION)),
+                            cursor.getInt(cursor.getColumnIndexOrThrow(DataBaseHelper.COLLUMN_METER))
+                    );
+                    tmpMountains.add(mountain);
+                }
+                cursor.close();
+                mountains.addAll(tmpMountains);
+                adapter.notifyDataSetChanged();
+            }
+        });
+
+        clearDBButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                db.getWritableDatabase().execSQL("DELETE FROM " + DataBaseHelper.TABLE_MOUNTAIN);
+            }
+        });
+
+        db = new DataBaseHelper(this);
         gson = new Gson();
         mountains = new ArrayList<Mountain>();
         mountainRecyclerView = findViewById(R.id.recycler_view);
@@ -71,8 +104,18 @@ public class MainActivity extends AppCompatActivity implements JsonTask.JsonTask
 
         Type type = new TypeToken<List<Mountain>>() {}.getType();
         List<Mountain> mountainList = gson.fromJson(json, type);
-        mountains.addAll(mountainList);
 
+        for(int i = 0; i < mountainList.size(); i++){
+            Mountain mountain = mountainList.get(i);
+            ContentValues values = new ContentValues();
+            values.put(DataBaseHelper.COLLUMN_NAME, mountain.getName());
+            values.put(DataBaseHelper.COLLUMN_LOCATION, mountain.getLocation());
+            values.put(DataBaseHelper.COLLUMN_METER, mountain.getMeter());
+            db.getWritableDatabase().insert(DataBaseHelper.TABLE_MOUNTAIN, null, values);
+
+        }
+
+        mountains.addAll(mountainList);
         adapter.notifyDataSetChanged();
     }
 }
