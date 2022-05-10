@@ -6,6 +6,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -22,6 +24,11 @@ public class MainActivity extends AppCompatActivity implements JsonTask.JsonTask
     private MountainAdapter adapter;
     private List<Mountain> mountains;
 
+    private Button fetchWwwButton;
+    private Button fetchDBButton;
+    private Button clearViewButton;
+    private Button clearDBButton;
+
     private Gson gson;
 
     @Override
@@ -29,13 +36,32 @@ public class MainActivity extends AppCompatActivity implements JsonTask.JsonTask
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        fetchWwwButton = findViewById(R.id.fetch_www);
+        fetchDBButton = findViewById(R.id.fetch_db);
+        clearViewButton = findViewById(R.id.clear_recycler_view);
+        clearDBButton = findViewById(R.id.clear_db);
+
+        fetchWwwButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new JsonTask(MainActivity.this).execute(JSON_URL);
+            }
+        });
+
+        clearViewButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mountains.clear();
+                adapter.notifyDataSetChanged();
+            }
+        });
+
         gson = new Gson();
         mountains = new ArrayList<Mountain>();
         mountainRecyclerView = findViewById(R.id.recycler_view);
         adapter = new MountainAdapter(mountains);
         mountainRecyclerView.setAdapter(adapter);
         mountainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        new JsonTask(this).execute(JSON_URL);
 
     }
 
